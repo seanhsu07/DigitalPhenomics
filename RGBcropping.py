@@ -14,7 +14,7 @@ def createDir(current):
     try:
         os.mkdir(outputPath)
         success = True
-    except errno.EACCES and FileExistsError:
+    except errno.EACCES or FileExistsError:
         if not os.path.exists(outputPath):
             print('Program does not have access to create a directory\n'
                   'Please create a directory called \'output\'')
