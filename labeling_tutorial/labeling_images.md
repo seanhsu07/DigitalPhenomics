@@ -2,4 +2,6 @@ Labeling Tutorial
 
 The labeling tool chosen for this project is the VGG Image Annotator (http://www.robots.ox.ac.uk/~vgg/software/via/). 
 
-To label the images, go to the webpage listed above and select 
+To label the images, go to the webpage listed above go to downloads / Version 2 _ Image Annotator/ via.html. 
+
+![alt text]
