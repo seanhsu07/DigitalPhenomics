@@ -34,9 +34,9 @@ if ROOT_DIR.endswith("samples/balloon"):
 
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)
-from config import Config
-import utils
-# import model as modellib
+from mrcnn.config import Config
+import mrcnn.utils as utils
+import mrcnn.model as modellib
 
 # Path to trained weights file
 COCO_WEIGHTS_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
@@ -44,6 +44,7 @@ COCO_WEIGHTS_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
 # Directory to save logs and model checkpoints, if not provided
 # through the command line argument --logs
 DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
+
 
 ############################################################
 #  Configurations
@@ -104,7 +105,7 @@ class BalloonDataset(utils.Dataset):
         #   'size': 100202
         # }
         # We mostly care about the x and y coordinates of each region
-        annotations = json.load(open("D:/maskRCNN/trainning_test_set/via_export_json.json"))
+        annotations = json.load(open(os.path.join(dataset_dir, "via_region_data.json")))
         annotations = list(annotations.values())  # don't need the dict keys
 
         # The VIA tool saves images in the JSON even if they don't have any
@@ -116,9 +117,11 @@ class BalloonDataset(utils.Dataset):
             # Get the x, y coordinaets of points of the polygons that make up
             # the outline of each object instance. There are stores in the
             # shape_attributes (see json format above)
-            polygons = [r['shape_attributes'] for r in a['regions'].values()]
-
-            # load_mask() needs the image size to convert polygons to masks.
+            if type(a['regions']) is dict:
+                polygons = [r['shape_attributes'] for r in a['regions'].values()]
+            else:
+                polygons = [r['shape_attributes'] for r in a['regions']]
+                # load_mask() needs the image size to convert polygons to masks.
             # Unfortunately, VIA doesn't include it in JSON, so we must read
             # the image. This is only managable since the dataset is tiny.
             image_path = os.path.join(dataset_dir, a['filename'])
@@ -183,11 +186,16 @@ def train(model):
     # Since we're using a very small dataset, and starting from
     # COCO trained weights, we don't need to train too long. Also,
     # no need to train all layers, just the heads should do it.
-    print("Training network heads")
+    # print("Training network heads")
+    # model.train(dataset_train, dataset_val,
+    #             learning_rate=config.LEARNING_RATE,
+    #             epochs=30,
+    #             layers='heads')
+    print("Train all layers")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=30,
-                layers='heads')
+                epochs=40,
+                layers='all')
 
 
 def color_splash(image, mask):
@@ -296,8 +304,8 @@ if __name__ == '__main__':
     if args.command == "train":
         assert args.dataset, "Argument --dataset is required for training"
     elif args.command == "splash":
-        assert args.image or args.video,\
-               "Provide --image or --video to apply color splash"
+        assert args.image or args.video, \
+            "Provide --image or --video to apply color splash"
 
     print("Weights: ", args.weights)
     print("Dataset: ", args.dataset)
@@ -312,6 +320,8 @@ if __name__ == '__main__':
             # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
             GPU_COUNT = 1
             IMAGES_PER_GPU = 1
+
+
         config = InferenceConfig()
     config.display()
 
@@ -358,4 +368,3 @@ if __name__ == '__main__':
     else:
         print("'{}' is not recognized. "
               "Use 'train' or 'splash'".format(args.command))
-              
