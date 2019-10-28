@@ -1,0 +1,9 @@
+Using Polygon or polylines
+  - Use polygon
+No need for specify region attributes. 
+do we need the same number of points when labeling
+  - No
+Document decisions for labeling (attribute type, region of interest)
+Update the tutorial (loading and saving, labeling parameters)
+Saving and loading the json files for image labeling
+Start labeling some of the data set for training. 
